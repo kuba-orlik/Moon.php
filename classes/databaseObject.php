@@ -395,7 +395,7 @@ class databaseObject{
 		if($attrib_type=="integer" || $attrib_type=="string"){
 			//attrib is id
 			$data = $this->getRow($attrib);
-			$this->id = $id;
+			$this->id = $attrib;
 		}else{
 			//attrib is row
 			$data = $attrib;
