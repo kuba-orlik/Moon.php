@@ -1,0 +1,72 @@
+<grid style='flex-direction: row-reverse'>
+	<div class='column_medium'>
+		<div class='card' ng-show='exercise_list_loaded' style='transition-delay:100ms'>
+			<span style='font-size:1.5rem'>Total of <strong>{{exercises.length}}</strong> exercises</span>
+			<a ng-show='filter.muscle_part!="all"' ng-click='filter.muscle_part="all"'>view all</a>
+			<span class='button' goto='/exercise/new'>Create new exercise</span>
+		</div>
+		<div class='card' ng-show='exercise_list_loaded' style='transition-delay:200ms; padding-left: 5px; padding-right: 5px;'>
+			<h2>
+				Filter by muscles:
+			</h2>
+			<span class='list_row' ng-repeat='muscle_type in muscle_parts | orderBy:"name"' style='cursor:pointer; ' ng-class="{active: muscle_type.id==filter.muscle_part}" ng-click='filter.muscle_part=muscle_type.id'>
+				{{muscle_type.name}}
+			</span>
+		</div>
+		<div class='card' ng-show='exercise_list_loaded' style='transition-delay:300ms; padding-left: 5px; padding-right: 5px;'>
+			<h2>
+				Sort by:
+			</h2>
+			<span class='list_row' style='cursor:pointer' ng-click="sort='days_since_last_exercise'" ng-class="{active: sort=='days_since_last_exercise'}">
+				recency
+			</span>
+			<span class='list_row' style='cursor:pointer' ng-click="sort='name'" ng-class="{active: sort=='name'}">
+				name
+			</span>
+		</div>
+	</div>
+	<div class='column_large' >
+		<div class='card' ng-show='exercise_list_loaded'>
+			<span style='font-size:1.8rem'>
+				Exercises <span ng-show='filter.muscle_part!="all"'>for {{getMuscleName()}}</span>
+			</span>
+			<div>
+				<span>
+					<!--type:
+					<select ng-model='filter.muscle_part' ng-options='obj.id as obj.name for obj in muscle_parts'>
+					</select>-->
+				</span>
+			</div>
+			<table style='border-collapse:collapse; width:100%'>
+				<tr ng-repeat="exercise in exercises | filter:filterExercises | orderBy:sort" class='exercise_list_row' ng-class='{even: $even}'>
+					<td>
+						<a href='#/exercise/{{exercise.id}}'>
+							{{exercise.name}}
+							<sparkline tiny='true' style='width:100px; height:20px; display:inline-block' data='exercise.results'></sparkline>
+						</a>
+					</td>
+					<td class='secondary_visible'>
+						{{exercise.days_since_last_exercise}}d
+					</td>
+					<td>
+						<button class='button small secondary' goto="/exercise/{{exercise.id}}/go">
+							exercise now
+						</button>
+					</td>
+				</tr>
+			</table>
+			<!--<div ng-repeat='exercise in exercises | filter:filterExercises | orderBy:"name"' class='list_row' ng-class='{even: $even}'>
+				<a href='#/exercise/{{exercise.id}}'>
+					{{exercise.name}} 
+					<sparkline tiny='true' style='width:100px; height:20px; display:inline-block' data='exercise.results'></sparkline>
+				</a>
+				<span>
+				{{exercise.days_since_last_exercise}}d
+				</span>
+				<button class='button small secondary' goto="/exercise/{{exercise.id}}/go">
+					exercise now
+				</button>
+			</div>-->
+		</div>
+	</div>
+</grid>

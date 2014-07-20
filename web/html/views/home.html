@@ -1,0 +1,41 @@
+<div id='home_grid' ng-controller='home'>
+	<div class='home_column home_left_column'>
+		<card class='animate_enter'>
+			<h2>
+				Last exercised:
+			</h2>
+			<span style='font-size:2.5rem' ng-pluralize count="user.last_exercised" when="{'0': 'today', 1: 'yesterday','other': '{} days ago'}">		
+   			</span>
+   			<a href="#/history" class='secondary' style='align-self:flex-end'>see history-></a>
+		</card>
+		<recommendationcard ng-repeat='recom in recommendations' recom='recom' style="transition-delay:{{$index*100}}ms"></recommendationcard>
+	</div>
+	<div class='home_column home_right_column'>
+		<div class="card" ng-show="score_loaded">
+			<h1>
+			Current streak:
+			</h1>
+			<span>
+				<img src="/web/images/battery/{{streak_status.current}}.png" height="100px" ng-show="streak_status.current>0"/>
+				<img src="/web/images/lightning.png" height="100px" ng-show="streak_status.current>0"/>
+				<span class="main_color" style="font-size: 110px;line-height: 95px;font-weight: 100;display: inline-block;vertical-align: top;">
+					{{streak_status.current}}
+				</span>
+			</span>
+		</div>
+		<div class='card' ng-show='score_loaded' style='padding:10px 0px;transition-delay:50ms'>
+			<span>your current score:</span>
+			<span class='score' ng-class='{"negative": current_score<0}'>{{current_score}}</span>
+			<pointschart data='scores' style='width:100%'></pointschart>
+			<span class='secondary' style='transition-delay:100ms; position:absolute; bottom:0px; width:100%; text-align:center' >view last:
+				<select ng-model='score_lookBehind'>
+					<option value=30>	1 month </option>
+					<option value=180>	6 months</option>
+					<option value=365>	1 year</option>
+					<option value=730>	2 years</option>
+					<option value=1095>	3 years</option>
+				</select>
+			</span>
+		</div>
+	</div>
+</div>

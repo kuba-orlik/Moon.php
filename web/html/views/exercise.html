@@ -1,0 +1,69 @@
+<grid>
+	<div class='column_large' >
+		<card ng-show='data_loaded'>
+			<h1 style='font-size:2.5rem; text-align:center'>
+			{{exercise.name}}
+			</h1>
+			<sparkline width='700' height='350' data='exercise.results' zero='false' style='display:block; width:100%; height:350px; position:relative' class='full_stroke'></sparkline>
+		</card>
+		<card ng-show='log_loaded && data_loaded' style="transition-delay:100ms">
+			<h2>
+				Recent history for <i>{{exercise.name}}</i>
+			</h2>
+			<div ng-include='"/web/html/snippets/exercise_history_preview.html"'></div>
+		</card>
+	</div>
+	<div class='column_medium'>
+		<card ng-show='data_loaded' >	
+			<span>
+				last exercised 
+				<span ng-pluralize count="exercise.days_since_last_exercise" when="{'0': 'today', 1: 'yesterday','other': '{} days ago'}">
+				</span>
+			</span> 
+			<button class='button larger' style='margin-top:12px' goto="/exercise/{{exercise.id}}/go"> 
+				exercise now! ({{exercise.estimated_duration/60 | number: 0}}min)
+			</button>
+			<div class='secondary' style='text-align:right; width:100%'>
+				<a href="#/exercise/{{exercise.id}}/log">
+					log past results
+				</a>
+			</div>
+		</card>
+		<card ng-show='data_loaded' style="transition-delay:100ms">
+			<h2>Stats</h2>
+			<table>
+				<tr>
+					<td style="text-align:right">
+						max score:
+					</td>
+					<td>
+						 <span style='font-size:2rem'>{{exercise.max_score}}</span>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align:right">
+						exercised
+					</td>
+					<td>
+						 <span style='font-size:2rem'>{{exercise.results.length}}</span>
+						 times
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align:right">
+						total progress:
+					</td>
+					<td>
+						<span style='font-size:2rem'>{{round(exercise.total_progress*1000)/10}}</span>%
+					</td>	
+				</tr>
+			</table>
+			<a class='secondary' style='align-self:flex-end'>
+				see more->	
+			</a>
+		</card>
+		<card ng-show="data_loaded" style="transition-delay:300ms">
+			<h2><input type="checkbox" ng-model="exercise.show_in_recom" ng-change="adjust_paused()"><span ng-click="negatePaused()">show in recommendations</span></h2>
+		</card>
+	</div>
+</grid>

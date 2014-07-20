@@ -1,0 +1,110 @@
+<grid>
+	<div class='column_large'>
+		<card ng-show='exercise_list_loaded'>
+			<h1>
+				Create new exercise routine
+			</h1>
+			<h2 class='with_emphasis' style='align-self:flex-start'> Step 1. <strong>Title</strong></h2>
+			<div style='width:100%;'>
+				<input ng-model='exercise_data.name' class="large_input" placeholder="what's the routine called?"  type='text'/>
+			</div>
+			<div class='status' ng-class="validateName(exercise_data.name).status">
+				{{validateName(exercise_data.name).message}}
+			</div>
+		</card>
+		<card ng-show='exercise_list_loaded' style='transition-delay:100ms;'>
+			<h2 class='with_emphasis' style='align-self:flex-start'> Step 2. <strong>Muscles involved</strong></h2>
+			<h3 class='with_emphasis'> Where will it <strong>burn</strong> the next day?</h3>
+			<div style='width:100%;'>
+				<div ng-repeat='muscle in muscle_parts' class='list_row' style='cursor:pointer' ng-class='{even: $even, active: muscle.id==exercise_data.muscle_part_id&&!exercise_data.use_custom_muscle}' ng-click='exercise_data.muscle_part_id=muscle.id; exercise_data.use_custom_muscle=false'>
+					{{muscle.name}}
+				</div>
+				<div class='list_row' style='cursor:pointer' ng-class='{active: exercise_data.use_custom_muscle}' ng-click='exercise_data.use_custom_muscle=true'>
+					<span>new: <input  type='text' ng-model='exercise_data.muscle_part_name_custom'  placeholder='e.g. "abs" or "chest"' ng-change='exercise_data.use_custom_muscle=true;'/></span>
+				</div>
+			</div>
+			<div class='status'>
+				<span ng-show='exercise_data.muscle_part_name==""'>choose one!</span>
+			</div>
+		</card>
+		<card ng-show='exercise_list_loaded' style='transition-delay: 200ms;'>
+			<h2 class='with_emphasis' style='align-self:flex-start'> Step 3. <strong>The Template</strong></h2>
+			<accordion>
+				<choise ng-class='{active: exercise_data.template.type=="traditional"}'>
+					<name ng-click='exercise_data.template.type="traditional"'>
+						<input type='radio'  ng-model='exercise_data.template.type' value='traditional'/>
+						Option 1: <strong>Traditional</strong>
+					</name>
+					<content style='text-align:center'>
+						I will make <input type='text' style='width:2rem; text-align: center; font-size: 1.3rem;' ng-model='exercise_data.template.params.traditional.set_amount'/> sets of as much reps as I can!
+					</content>
+				</choise>
+				<choise ng-class='{active: exercise_data.template.type=="outside"}'>
+					<name ng-click='exercise_data.template.type="outside"'>
+						<input type='radio'  ng-model='exercise_data.template.type' value='outside'/>
+						Option 2: <strong>Outside</strong>
+					</name>
+					<content>
+						<div style='display:flex; flex-flow:row wrap; margin: 0px 4rem;'>
+							<div class='outside_option'>
+								<input type='checkbox' ng-model='exercise_data.template.params.outside.distance'/>							
+								distance
+							</div>
+							<div class='outside_option'>
+								<input type='checkbox' ng-model='exercise_data.template.params.outside.avg_speed'/>
+								avg. speed
+							</div>
+							<div class='outside_option'>
+								<input type='checkbox' ng-model='exercise_data.template.params.outside.calories'/>
+								calories burned
+							</div>
+							<div class='outside_option'>
+								<input type='checkbox' ng-model='exercise_data.template.params.outside.max_speed'/>
+								max speed
+							</div>
+						</div>
+					</content>
+				</choise>
+				<choise ng-class='{active: exercise_data.template.type=="fancy"}'>
+					<name ng-click='exercise_data.template.type="fancy"'>
+						<input type='radio' ng-model='exercise_data.template.type' value='fancy'/>
+						Option 3: <strong>Fancy</strong>
+					</name>
+					<content >
+						<div style='display:flex;flex-flow:column; width: 24rem;margin: 0 auto'>
+							fields:
+							<table style='width:100%'>
+							<tr ng-repeat='row in exercise_data.template.params.fancy.rows'>
+								<td>
+									<input type='text' placeholder='name, e.g. "set #1" or "distance"' ng-model='row.name' style='width:100%'/>
+								</td>
+								<td>
+									<input type='text' placeholder='unit, e.g. "reps" or "km"' ng-model='row.unit' style='width:100%'/>
+								</td>
+								<td>
+									<button ng-show='exercise_data.template.params.fancy.rows.length!=1' class='button small' ng-click="remove_fancy_row($index)">x</button>
+								</td>
+							</tr>
+							</table>
+							<button class='button' style='flex-grow: 0; align-self: flex-end;' ng-click="add_fancy_row()">add field</button>
+						</div>
+					</content>
+				</choise>
+			</accordion>
+		</card>
+		
+	</div>
+	<div class='column_medium' style='align-self:flex-end'>
+		<card ng-show='exercise_list_loaded' style='transition-delay: 300ms;'>
+			<h1>summary</h1>
+			<button class='button' ng-class='{disabled: !statusOK()}' ng-click='create()'>
+				<span ng-show='statusOK()'>
+					ready to create!
+				</span>
+				<span ng-show='!statusOK()'>
+					check your input
+				</span>
+			</button>
+		</card>
+	</div>
+</grid>

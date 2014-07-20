@@ -1,0 +1,16 @@
+[18-Jun-2014 11:00:05 Europe/Berlin] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[HY000]: General error: 1615 Prepared statement needs to be re-prepared' in /home/kuba/public_html/workout2/classes/databaseObject.php:296
+Stack trace:
+#0 /home/kuba/public_html/workout2/classes/databaseObject.php(296): PDO->query('SELECT * FROM u...')
+#1 /home/kuba/public_html/workout2/classes/databaseObject.php(183): databaseObjectColection::getUnfiltered(Array)
+#2 /home/kuba/public_html/workout2/CRON.php(231): databaseObjectColection::getAll()
+#3 /home/kuba/public_html/workout2/CRON.php(238): EmailReminder::process()
+#4 {main}
+  thrown in /home/kuba/public_html/workout2/classes/databaseObject.php on line 296
+[22-Jun-2014 11:00:05 Europe/Berlin] PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[HY000]: General error: 1615 Prepared statement needs to be re-prepared' in /home/kuba/public_html/workout2/classes/databaseObject.php:296
+Stack trace:
+#0 /home/kuba/public_html/workout2/classes/databaseObject.php(296): PDO->query('SELECT * FROM u...')
+#1 /home/kuba/public_html/workout2/classes/databaseObject.php(183): databaseObjectColection::getUnfiltered(Array)
+#2 /home/kuba/public_html/workout2/CRON.php(231): databaseObjectColection::getAll()
+#3 /home/kuba/public_html/workout2/CRON.php(238): EmailReminder::process()
+#4 {main}
+  thrown in /home/kuba/public_html/workout2/classes/databaseObject.php on line 296

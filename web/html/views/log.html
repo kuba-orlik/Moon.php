@@ -1,0 +1,30 @@
+<grid>
+	<div class='column_large' ng-show='loaded'>
+		<card>
+			<h1>
+				Log View
+			</h1>
+			<h2>
+				{{exercise.name}}
+			</h2>
+			<h3>
+				{{log.begin_time}}
+			</h3>
+			<table style='font-size:1.2rem'>
+				<tr>
+					<th ng-repeat='template in exercise.setTemplates'>
+						{{template.name}}
+					</th>
+				</tr>
+				<tr>
+					<td ng-repeat='result in log.results' style='text-align:center'>
+						{{result.result}}
+					</td>
+				</tr>
+			</table>
+		</card>
+	</div>
+	<div class='column_medium'>
+
+	</div>
+</grid>

@@ -1,0 +1,81 @@
+<grid>
+
+	<div class='column_large'>
+		<card ng-show='exercise_loaded && mode=="set"'>
+			<h1>{{exercise.name}}</h1>
+				<span>last time: {{last_result.results[current_set_no-1].result}}</span>
+			<div>
+			</div>
+			<input type='number' style='width:3em; font-size:8rem; text-align:center; color:rgb(77,77,77)' ng-model='results[current_set_no-1]'>
+			<button class='button large' ng-click='next()' style='margin-top:25px'>
+				next ->
+			</button>
+		</card>
+		<card ng-show='exercise_loaded && mode=="timer"'>
+			<h1>{{exercise.name}}</h1>
+			rest:
+			<span style='font-size:7rem'>{{timer}}s</span>
+			<button class='button large' ng-click="nextSet()">
+				skip ->
+			</button>
+		</card>
+		<card ng-show='mode=="finish"'>
+			<h1 style='font-size:4rem;'>
+				Finished!
+			</h1>
+			<h1>
+				{{exercise.name}}
+			</h1>
+			<table style='font-size: 1.2rem;'>
+				<tr>
+					<th ng-repeat='template in exercise.setTemplates' style='padding:1px 7px'>
+						{{template.name}}
+					</th>
+				</tr>
+				<tr>
+					<td ng-repeat='result in results track by $index' style='text-align:center'>
+						{{result}}
+					</td>
+				</tr>
+			</table>
+			<button class='button large' ng-click='save()'>
+				save
+			</button>
+		</card>
+	</div>
+	<div class='column_medium'> 
+		<card ng-show='exercise_loaded && mode=="set"' style='cursor:pointer' ng-click='music_paused=!music_paused'>
+			<span style='font-size:4rem; position:relative; z-index:1; cursor:pointer'>
+				<span ng-show='music_paused'>
+					&#9654;
+				</span>
+				<span ng-show='!music_paused' style='font-weight:bold'>
+					||
+				</span>
+			</span>
+			<div class='fake_music_bars'>
+				<musicbar ng-class='{animated:!music_paused}'></musicbar>
+				<musicbar ng-class='{animated:!music_paused}'></musicbar>
+				<musicbar ng-class='{animated:!music_paused}'></musicbar>
+				<musicbar ng-class='{animated:!music_paused}'></musicbar>
+				<musicbar ng-class='{animated:!music_paused}'></musicbar>
+				<musicbar ng-class='{animated:!music_paused}'></musicbar>
+				<musicbar ng-class='{animated:!music_paused}'></musicbar>
+				<musicbar ng-class='{animated:!music_paused}'></musicbar>				
+			</div>
+		</card>
+		<card ng-show='exercise_loaded && mode=="set"' style='cursor:pointer; overflow:hidden; height:70px' ng-click='metronome_active=!metronome_active'>
+			<div id='metronome_arrow' ng-class='{animated: metronome_active}'></div>
+		</card>
+
+		<card ng-show='exercise_loaded && mode!="finish"'>
+			<h1>set <span>{{current_set_no}}</span>/{{template.length}}</h1>
+		</card>
+		<card ng-show='exercise_loaded && mode=="timer"'>
+			prepare for
+			<span style='font-size:3rem'>
+				{{results[current_set_no]}} reps
+			</span>
+		</card>
+	</div>
+</grid>

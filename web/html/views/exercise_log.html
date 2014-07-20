@@ -1,0 +1,92 @@
+<grid>
+	<div class='column_large' ng-show='loaded'>
+		<card>
+			<h1>
+				Log past results
+			</h1>
+			<table>
+				<tr>
+					<td>
+						date:
+					</td>
+					<td>
+						<input type='date' ng-model='begin_time'> {{begin_time}}
+					</td>
+				</tr>
+				<tr>
+					<td>
+						type
+					</td>
+					<td>
+						<select ng-model='type' ng-options='typeL.id as typeL.name for typeL in types' style='font-size:1.2rem'>
+							
+						</select>
+					</td>
+				</tr>
+				<tr ng-show='type=="regular"'>
+					<td>
+						exercise:
+					</td>
+					<td>
+						<select ng-model='exercise' ng-options='exercise.name for exercise in exercises' style='font-size:1.2rem'>
+						</select>
+					</td>
+				</tr>
+				<tr ng-show='type=="regular"'>
+					<td>
+						results:
+					</td>
+					<td>
+						<table>
+							<tr ng-repeat='template in exercise.setTemplates'>
+								<td>
+									<input type='text' placeholder="{{template.name}}" ng-model='results[$index]'>{{template.unit}}
+								</td>
+							</tr>
+						</table>
+					</td>	
+				</tr>
+				<tr ng-show='type=="custom"'>
+					<td>
+						description:
+					</td>
+					<td>
+						<input ng-model='custom_name' type='text'>
+					</td>
+				</tr>
+				<tr ng-show='type=="custom"'>
+					<td>
+						muscle part:
+					</td>
+					<td>
+						<select ng-model='muscle_part_id' ng-options='muscle.id as muscle.name for muscle in muscle_parts'>
+
+						</select>
+					</td>
+				</tr>
+				<tr ng-show='type=="custom"'>
+					<td>
+						result:
+					</td>
+					<td>
+						<input ng-model='custom_result' type='text'>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						duration:
+					</td>
+					<td>
+						<input type='number' ng-model='duration_s'>s
+					</td>
+				</tr>
+			</table>
+			<button class='button large' ng-click='save()'>
+				save
+			</button>
+		</card>
+	</div>
+	<div class='column_medium'>
+
+	</div>
+</grid>

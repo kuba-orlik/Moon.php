@@ -1,0 +1,77 @@
+<grid>
+	<div class='column_large' >
+		<card ng-show='history_loaded'>
+			<h1>
+				History
+			</h1>	
+			<style scoped>
+				table{
+					border-collapse:collapse;
+				}
+				tr{
+					transition:all 200ms;
+				}
+
+				tr:hover{
+					-webkit-filter:brightness(0.9);
+				}
+
+				tr.nothing{
+					background-color: #f2dede;
+				}
+
+				tr.something{
+					background-color: #dff0d8;
+				}
+
+				td{
+					padding:4px 12px;
+				}
+			</style>
+			<table style='width:100%'>
+				<tr>
+					<th>
+						date
+					</th>
+					<th>
+						exercise
+					</th>
+					<th>
+						points
+					</th>
+					<th>
+						combo
+					</th>
+				</tr>
+				<tr ng-repeat='day in history' ng-class='{something:day.logs.length>0, nothing:day.logs.length==0}'>
+					<td style='text-align:left'>
+						{{day.date}}
+					</td>
+					<td>
+						<table>
+							<tr ng-show='day.logs.length==0'>
+								<td>
+									nothing
+								</td>
+							</tr>
+							<tr ng-repeat='log in day.logs'>
+								<td>
+									<a href='#/logs/{{log.id}}'>{{log.exercise_name}}</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td style='text-align:Center'>
+						{{day.points}}
+					</td>
+					<td style='text-align:Center'>
+						{{day.combo}}
+					</td>
+				</tr>
+			</table>
+		</card>
+	</div>
+	<div class='column_medium'>
+
+	</div>
+</grid>

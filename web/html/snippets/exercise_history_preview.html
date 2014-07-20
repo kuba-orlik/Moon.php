@@ -1,0 +1,23 @@
+<table style='border-collapse:collapse'>
+	<tr>
+		<th>
+			date
+		</th>
+		<th ng-repeat='set in exercise.setTemplates'>
+			{{set.name}} 
+		</th>
+	</tr>
+	<tr ng-repeat='entry in log' class='historyPreview_row'>
+		<td style='text-align:right'>
+			{{entry.begin_timestamp*1000 | date:'d MMM yyyy'}}
+		</td>
+		<td ng-repeat='res in entry.results' style='text-align:center'>
+			{{res.result}}
+		</td>
+	</tr>
+</table>
+<div style='width:100%; text-align:right'>
+	<a class='secondary' style='align-self:flex-end'>
+		see more->
+	</a>
+</div>
