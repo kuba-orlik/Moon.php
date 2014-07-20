@@ -51,6 +51,15 @@ class Exercise extends databaseObject {
 	protected $duration_stack;
 	protected $max_score;
 
+	public static $machine_name = "exercise";
+
+	protected static $attributes = array(
+		"int muscle_part_id s foreign:muscle_part(id)",
+		"int user_id s foreign:user(id)",
+		"string name s length:40",
+		"bool paused s"
+	);
+
 	private $rel_columns = array();
 
 	public function __construct($id) {
