@@ -8,7 +8,7 @@ include_once DIR_CLASSES . "muscleParts.php";
 
 include_once DIR_CLASSES . "logEntries.php"; 
 
-class Exercises extends databaseObjectColection {
+class exercisesCollection extends databaseObjectColection {
 	protected static $table_name = "exercises";
 	protected static $class_name = "Exercise";
 	protected static $table_filtered = false;
@@ -39,17 +39,6 @@ class Exercises extends databaseObjectColection {
 }
 
 class Exercise extends databaseObject {
-	protected $id;
-	protected $muscle_part_id;
-	protected $name;
-	protected $user_id;
-	protected $paused;
-	protected $graphable;
-	protected $outdor;
-	protected $recom;
-	protected $results_json;
-	protected $duration_stack;
-	protected $max_score;
 
 	public static $machine_name = "exercises"; //non-plural by design
 
@@ -106,7 +95,7 @@ class Exercise extends databaseObject {
 		$this->setAttr("duration_stack", json_encode($data));
 	}
 
-	public function rebuildDurationStack(){
+	protected function getDuration_stack(){
 		$query = "SELECT duration_s, sum(result) AS sum FROM log_entry LEFT JOIN log_entry_regular ON log_entry_regular.id=log_entry.rel_id AND log_entry.type='regular' LEFT JOIN sets ON log_entry_regular.id=sets.log_entry_id WHERE log_entry_regular.exercise_id=? AND log_entry.id GROUP BY log_entry.id ORDER BY begin_time DESC LIMIT 0, 3";
 		$rows = Database::prepareAndExecute($query, array($this->id));
 		$data = array();
@@ -116,8 +105,7 @@ class Exercise extends databaseObject {
 			$new_row["reps"] = $row["sum"];
 			$data[]=$new_row;
 		}
-		$json = json_encode($data);
-		$this->setAttr("duration_stack", $json);
+		return $data;
 	}
 
 	public function getMultiplier(){
@@ -191,14 +179,10 @@ class Exercise extends databaseObject {
 		}
 	}
 
-	private function getMaxScore(){
-		return $this->max_score;
-	}
-
-	public function refreshMaxScore(){
+	protected function getMax_score(){
 		$query = "SELECT MAX( result ) FROM log_entry LEFT JOIN log_entry_regular ON rel_id = log_entry_regular.id LEFT JOIN sets ON log_entry_regular.id = sets.log_entry_id WHERE TYPE =  'regular' AND exercise_id =?";
 		$rows = Database::prepareAndExecute($query, array($this->id));
-		$this->setAttr("max_score", $rows[0][0]);
+		return $rows[0][0];
 	}
 
 	private function getSetTemplates(){
@@ -229,26 +213,17 @@ class Exercise extends databaseObject {
 		}
 	}
 
-	public function getResults($type='sum', $with_dates = false){
+	protected function getResults($type='sum', $with_dates = false){
 		$self_id = $this->id;
-		switch($type){
-			case "sum":
-				if(!$with_dates){
-					if($this->results_json!=null){
-						return json_decode($this->results_json);
-					}else{
-						$query = "SELECT sum(result) AS `sum` FROM log_entry_regular LEFT JOIN sets ON log_entry_id=log_entry_regular.id left join log_entry ON log_entry_regular.id=log_entry.rel_id WHERE exercise_id=?  AND log_entry.id IS NOT NULL AND log_entry.type='regular' GROUP BY log_entry_id ORDER BY UNIX_TIMESTAMP(begin_time) ASC";
-						$rows = Database::prepareAndExecute($query, array($self_id));
-						$ret = array();
-						foreach($rows AS $row){
-							$ret[]=$row['sum'];
-						}			
-						$this->set(array('results_json'=>json_encode($ret)));		
-						return $ret;						
-					}
-				}
-			break;
-		}
+		$query = "SELECT sum(result) AS `sum` FROM log_entry_regular LEFT JOIN sets ON log_entry_id=log_entry_regular.id left join log_entry ON log_entry_regular.id=log_entry.rel_id WHERE exercise_id=?  AND log_entry.id IS NOT NULL AND log_entry.type='regular' GROUP BY log_entry_id ORDER BY UNIX_TIMESTAMP(begin_time) ASC";
+		$rows = Database::prepareAndExecute($query, array($self_id));
+		$ret = array();
+		foreach($rows AS $row){
+			//echo $row['sum'];
+			$ret[]=$row['sum'];
+		}			
+		//$this->set(array('results_json'=>json_encode($ret)));		
+		return $ret;						
 	}
 
 	public function getRecom(){

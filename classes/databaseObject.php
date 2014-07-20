@@ -47,8 +47,6 @@ class databaseObjectColection{
 				}else{
 					$condition.=' WHERE ';
 				}
-				//echo "i: " . $i . "</br>";
-				//echo "t:" . $params[$i] . "</br>";
 				$condition .= $params[$i] . "=?";
 				$to_query[]=$params[$i+1];				
 			}
@@ -115,7 +113,6 @@ class databaseObjectColection{
 
 		$query = self::parse_query($filterArray, array(), "SELECT *");
 		$query["query"].=" LIMIT $offset, $amount";
-		//echo $query["query"];
 		$rows = Database::prepareAndExecute($query["query"], $query["attributes"]);
 		$ret = array();
 		foreach($rows AS $row){
@@ -144,11 +141,9 @@ class databaseObjectColection{
 	}
 	
 	protected static function getFiltered($column, $value, $class_name=null){
-		//echo $column . " " . $value . "<br/>";
 		if($class_name==null) $class_name=static::$class_name;
 		$db = Database::connectPDO();
 		$query = "SELECT * FROM " . static::$table_name . " WHERE $column = ?";
-		//echo "$query <br/>";
 		if(isset($sort_attr['sorted']) && $sort_attr['sorted']){
 			$query.=" ORDER BY " . $sort_attr->sort_column . " " . $sort_attr->sort_order;
 		}
@@ -173,18 +168,17 @@ class databaseObjectColection{
 
 	public static function delete($object_id){
 		$query = "DELETE FROM " . static::$table_name . " WHERE id=?";
-		//echo $query;
 		$db = Database::connectPDO();
 		$prp = $db->prepare($query);
 		$prp->execute(array($object_id));
 		return array();
 	}	
 
-	public static function exists($id){
-		$query = "SELECT id FROM " . static::$table_name . " WHERE id=?";
+	public static function exists($id, $attribute_name="id"){
+		$query = "SELECT ? FROM " . static::$table_name . " WHERE id=?";
 		$db = Database::connectPDO();
 		$prp = $db->prepare($query);
-		$prp->execute(array($id));
+		$prp->execute(array($attribute_name, $id));
 		$rows = $prp->fetchAll();
 		return count($rows)!=0;
 	}
@@ -209,7 +203,9 @@ class databaseObjectColection{
 	}
 }
 
-class databaseObject{
+abstract class databaseObject{
+	protected $id;
+
 	private static $table_prefix = ""; //"class by design"
 	
 	private $attributes_storage = array(); 
@@ -218,7 +214,6 @@ class databaseObject{
 	public static $machine_name; 
 
 	private function checkTableStructure(){
-		echo $this->machine_name;
 	}
 
 	private function validate(){
@@ -232,23 +227,78 @@ class databaseObject{
 
 	private function parse_attributes(){
 		foreach(static::$attributes AS $attribute_notation){
-			new Attribute($attribute_notation);//very temp
+			$new_attr = new Attribute($attribute_notation);
+			$new_attr_name = $new_attr->name;
+			$this->attributes_storage[$new_attr_name] = $new_attr;
 		}
-		
+	}
+
+	protected static function getClassName(){
+		return get_called_class();
+	}
+
+	private function validate_obligatory_methods(){
+		foreach($this->attributes_storage AS $attribute){
+			if($attribute->mode[0]=="c"){
+				$method_name = "get" . ucfirst($attribute->name);
+				if(!method_exists($this, $method_name)){
+					$attribute_name = $attribute->name;
+					throw new Exception("DatabaseObjectException: if attribute $attribute_name is in 'c' (computed) mode, it has to be accessiblewith a get[ParamName] method.");
+				}
+				$reflection = new ReflectionMethod($this, $method_name);
+				$class_name = static::getClassName();
+				if($reflection->isPublic()){
+					throw new Exception("DatabaseObjectException: method $method_name in class $class_name mustn't be public.");	
+				}
+			}
+		}
 	}
 	
 	public function __construct($data){
 		$this->validate();
 		$this->parse_attributes();
+		$this->validate_obligatory_methods();
 		$this->load($data);
 	}
 
-	protected function insertData($data){
-		foreach($this AS $key=>$value){
-			if(isset($data[$key])){
+	private function attribute_exists($attribute_name){
+		return isset($this->attributes_storage[$attribute_name]);
+	}
+
+	private function insertData($data){
+		foreach($data AS $key=>$value){
+			/*if(isset($data[$key])){
 			 	$this->$key = $data[$key];
-			}		
+			}*/		
+			if($this->attribute_exists($key)){
+				$this->setRawAttribute($key, $value);
+				$temp_attr = $this->attributes_storage[$key];
+				if($temp_attr->is_cached() && $value==Null){
+					$function_name = self::getGetFunctionName($key);
+					$temp_attr->setValue($this->$function_name());
+				}
+			}
 		}
+	}
+
+	private static function getGetFunctionName($attribute_name){
+		return "get" . ucfirst($attribute_name);
+	}
+
+	private function setRawAttribute($attr_name, $attr_value, $raw=true){
+		if($this->attribute_exists($attr_name)){
+			if($raw){
+				$this->attributes_storage[$attr_name]->setRawValue($attr_value);				
+			}else{
+				$this->attributes_storage[$attr_name]->setValue($attr_value);				
+			}
+		}else{
+			throw new Exception("DatabaseObjectException: attribute $attr_name does not exists in class " . static::getClassName() . " for machine name " . static::$machine_name);
+		}
+	}
+
+	public function setAttribute($attr_name, $attr_value){
+		$this->setRawAttribute($attr_name, $attr_value, false);
 	}
 
 	private function getTableName(){
@@ -274,6 +324,10 @@ class databaseObject{
 		}else{
 			//attrib is row
 			$data = $attrib;
+			if(!isset($data["id"])){
+				throw new Exception("DatabaseObjectException: Reading object from array, but id attribute is not present.");
+			}
+			$this->id = $data["id"];
 		}
 		$this->insertData($data);	
 	}
@@ -284,9 +338,9 @@ class databaseObject{
 		return $ret;
 	}
 	
-	public function getAttr($attr){
-		if(in_array($attr, $this->gettable) && isset($this->$attr)){
-			return $this->$attr;			
+	public function getAttr($attr_name){
+		if($this->attribute_exists($attr_name)){
+			return $this->attributes_storage[$attr_name]->getValue();		
 		}else{
 			return NULL;
 		}
@@ -297,17 +351,14 @@ class databaseObject{
 	}
 
 	public function set($array){
-		$table = $this->table_name;
-		foreach($array AS $key=>$value){
-			if(in_array($key, $this->settable)){
-				//echo $key . "<br/>";
+		$table = $this->getTableName();
+		/*foreach($array AS $key=>$value){
 				$this->$key = $array[$key];
 				$db = Database::connectPDO();
 				$query = "UPDATE " . $table . " SET $key=? WHERE id=?";
 				$stmt = $db->prepare($query);
 				$stmt->execute(array($value, $this->getAttr("id")));
-			}
-		}
+		}*/
 	}
 	
 	public function public_set($array){
@@ -335,5 +386,16 @@ class databaseObject{
 		}
 		return $ret;
 	}
+
+	public function getData(){
+		$ret = array();
+		$ret["id"] = $this->id;
+		foreach($this->attributes_storage AS $key=>$value){
+			$ret[$key] = $value->getValue();
+		}
+		return $ret;
+	}
+
+	//abstract function cache_invalidation_on_change($attribute_name, $new_value);
 }
 
