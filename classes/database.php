@@ -40,6 +40,7 @@ class Database{
 	private static function log($entry_content){
 		$date = date('m/d/Y h:i:s a', time());
 		$entry = "$date \t $entry_content \r\n";
+		df("$entry <br/>");			
 		//file_put_contents(DIR_CLASSES . 'log.txt', $entry, FILE_APPEND);
 	}
 
@@ -53,10 +54,10 @@ class Database{
 	public static function prepareAndExecute($query_template, $attributes = array(), $get_id = false){
 		$timestamp = self::getTimestamp();
 		$db = self::connectPDO();
+		self::log(self::replace_question_marks($query_template, $attributes));
 		$prp = $db->prepare($query_template);
 		$prp->execute($attributes);
-		$time_passed = self::getTimestamp()-$timestamp;
-		self::log(self::replace_question_marks($prp->queryString, $attributes) . ", time: $time_passed ms");
+		//$time_passed = self::getTimestamp()-$timestamp;
 		//var_dump(strpos('UPDATE', strtoupper($query_template)));
 		if(!$get_id){
 			if(strpos(strtoupper($query_template), 'UPDATE')===false && strpos(strtoupper($query_template), 'INSERT')===false){

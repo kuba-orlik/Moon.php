@@ -1,5 +1,6 @@
 <?
 include_once "database.php";
+include_once "attribute.php";
 
 class databaseObjectColection{
 	
@@ -209,10 +210,39 @@ class databaseObjectColection{
 }
 
 class databaseObject{
-	protected $table_name;
-	protected $settable = array();
-	protected $gettable = array();
+	private static $table_prefix = ""; //"class by design"
 	
+	private $attributes_storage = array(); 
+
+	private static $attributes;
+	public static $machine_name; 
+
+	private function checkTableStructure(){
+		echo $this->machine_name;
+	}
+
+	private function validate(){
+		if(!isset(static::$machine_name)){
+			throw new Exception("DatabaseObjectInvalidException: '\$machine_name' not set");
+		}
+		if(!isset(static::$attributes)){
+			throw new Exception("DatabaseObjectInvalidException: '\$attributes' not set for class of machine_name '" . static::$machine_name . "'");
+		}
+	}
+
+	private function parse_attributes(){
+		foreach(static::$attributes AS $attribute_notation){
+			new Attribute($attribute_notation);//very temp
+		}
+		
+	}
+	
+	public function __construct($data){
+		$this->validate();
+		$this->parse_attributes();
+		$this->load($data);
+	}
+
 	protected function insertData($data){
 		foreach($this AS $key=>$value){
 			if(isset($data[$key])){
@@ -221,9 +251,13 @@ class databaseObject{
 		}
 	}
 
+	private function getTableName(){
+		return databaseObject::$table_prefix . static::$machine_name;
+	}
+
 	private function getRow($id){
 		$db = Database::connectPDO();
-		$query = "SELECT * FROM ". $this->table_name . " WHERE id=?";
+		$query = "SELECT * FROM ". $this->getTableName() . " WHERE id=?";
 		$rows= Database::prepareAndExecute($query, array($id));
 		//$stmt = $db->prepare($query);
 		//$stmt->execute(array($id));
@@ -231,7 +265,7 @@ class databaseObject{
 		return $rows[0];
 	}
 
-	protected function load($attrib){
+	private function load($attrib){
 		$attrib_type = gettype($attrib);
 		if($attrib_type=="integer" || $attrib_type=="string"){
 			//attrib is id

@@ -51,25 +51,33 @@ class Exercise extends databaseObject {
 	protected $duration_stack;
 	protected $max_score;
 
-	public static $machine_name = "exercise";
+	public static $machine_name = "exercises"; //non-plural by design
 
 	protected static $attributes = array(
 		"int muscle_part_id s foreign:muscle_part(id)",
 		"int user_id s foreign:user(id)",
 		"string name s length:40",
-		"bool paused s"
+		"bool paused s",
+		"bool graphable s",
+		"bool outdoor s",
+		"bool recom s",
+		"array(int) results c+",
+		"string duration_stack c+",
+		"int max_score c+"
 	);
 
-	private $rel_columns = array();
+	private function on_load(){
 
-	public function __construct($id) {
+	}
+
+	/*public function __construct($id) {
 		$this -> table_name = "exercises";
 		$this -> gettable = array("id", "muscle_part_id", "name", "user_id", "paused", "graphable", "outdoor", "recom", "results_json", "duration_stack", "max_score");
 		$this -> settable = array("muscle_part_id", "name", "user_id", "paused", "graphable", "outdoor", "recom", "results_json", "duration_stack", "max_score");
 		$this -> public_gettable = array("id", "muscle_part_id", "name", "user_id", "paused", "graphable", "outdoor", "recom", "results_json");
 		$this -> public_settable = array("muscle_part_id", "name", "paused", "graphable", "outdoor", "recom");
 		$this -> load($id);
-	}
+	}*/
 
 	public function refreshCachedData(){
 		$this->rebuildDurationStack();
