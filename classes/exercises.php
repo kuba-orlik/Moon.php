@@ -299,22 +299,25 @@ class Exercise extends databaseObject {
 //		echo "multiplier: $multiplier <br>";
 		$results = $this->getResults("sum", false);
 		$result_amount = count($results);
-		$last_reps_amount = $results[$result_amount-1];
-//		echo "last_reps_amount: $last_reps_amount <br>";
-		$set_templates = $this->getSetTemplates();
-		$set_templates_amount = count($set_templates);
-		if($set_templates_amount==0){
-			return null;
+		if($result_amount==0){
+			return 20*60;
+		}else{
+			$last_reps_amount = $results[$result_amount-1];
+			$set_templates = $this->getSetTemplates();
+			$set_templates_amount = count($set_templates);
+			if($set_templates_amount==0){
+				return null;
+			}
+			$estimated_reps = ceil($last_reps_amount/$set_templates_amount*$multiplier)*$set_templates_amount;
+	//		echo "estimated_reps: $estimated_reps <br>";
+			$estimated_total_rep_time = $estimated_reps*$avg_rep_duration;
+	//		echo $estimated_total_rep_time . "<br>";
+			$amount_of_breaks = $set_templates_amount-1;
+			$break_duration = 300;//hard-coded for now, configurable in the future
+			$time_spent_on_breaks = $amount_of_breaks*$break_duration;
+			$total_exercise_time = $estimated_total_rep_time + $time_spent_on_breaks;
+			return floor($total_exercise_time);			
 		}
-		$estimated_reps = ceil($last_reps_amount/$set_templates_amount*$multiplier)*$set_templates_amount;
-//		echo "estimated_reps: $estimated_reps <br>";
-		$estimated_total_rep_time = $estimated_reps*$avg_rep_duration;
-//		echo $estimated_total_rep_time . "<br>";
-		$amount_of_breaks = $set_templates_amount-1;
-		$break_duration = 300;//hard-coded for now, configurable in the future
-		$time_spent_on_breaks = $amount_of_breaks*$break_duration;
-		$total_exercise_time = $estimated_total_rep_time + $time_spent_on_breaks;
-		return floor($total_exercise_time);
 	}
 
 }
