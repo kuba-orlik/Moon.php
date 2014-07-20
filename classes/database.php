@@ -61,11 +61,12 @@ class Database{
 		if(!$get_id){
 			if(strpos(strtoupper($query_template), 'UPDATE')===false && strpos(strtoupper($query_template), 'INSERT')===false){
 				$rows = $prp->fetchAll();			
+				return $rows;			
 			}
-			return $rows;			
 		}else{
 			return $db->lastInsertId();
 		}
+		return null;
 	}
 
 	public static function execute($query){

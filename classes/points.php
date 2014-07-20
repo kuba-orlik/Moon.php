@@ -149,7 +149,7 @@ class Point{
 	}
 
 	public function get(){
-		if(!$loaded){
+		if(!$this->loaded){
 			$this->load();
 		}
 		$ret = array(
