@@ -54,8 +54,8 @@ class Exercise extends databaseObject {
 	public static $machine_name = "exercises"; //non-plural by design
 
 	protected static $attributes = array(
-		"int muscle_part_id s foreign:muscle_part(id)",
-		"int user_id s foreign:user(id)",
+		"int muscle_part_id s foreign:muscle_part:id,length:20",
+		"int user_id s foreign:user:id",
 		"string name s length:40",
 		"bool paused s",
 		"bool graphable s",
