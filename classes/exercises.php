@@ -313,7 +313,7 @@ class Exercise extends databaseObject {
 		}
 	}
 
-	private function getNumber(){
+	protected function getNumber(){
 		return 3;
 	}
 

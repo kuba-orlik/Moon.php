@@ -12,6 +12,48 @@ class Attribute{
 
 	private static $allowed_types = array("int", "string", "float", "bool", "array");
 
+	private function getSQLType(){
+		switch($this->type){
+			case "string":
+				return "text";
+			case "array":
+				return "string";
+			default:
+				return $this->type;
+		}
+	}
+
+	public function has_constraints(){
+		return count($this->constraints)>0;
+	}
+
+	private function getConstraintsSQLString(){
+		if(!$this->has_constraints()){
+			return "";
+		}else{
+			$ret = "";
+			foreach($this->constraints AS $constr){
+				$ret .= $constr->getSQLString();
+				if($constr!=end($this->constraints)){
+					$ret.=', ';
+				}
+			}
+			return $ret;
+		}
+	}
+
+	public function getSQLColumnStatement($table_name){
+		$column_name = $this->name;
+		$column_type = $this->getSQLType();
+		$query =  "ALTER TABLE $table_name ";
+		$query .= "ADD $column_name $column_type NULL";	
+		if($this->has_constraints()){
+			$query .=", ";	
+			$query .= $this->getConstraintsSQLString();
+		}
+		return $query;
+	}
+
 	private static function validate_array_type($array_notation){
 		preg_match("/array\(([a-z]+)\)/", $array_notation, $matches);
 		$inner_type = $matches[1];

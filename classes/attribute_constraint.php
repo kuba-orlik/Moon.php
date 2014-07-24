@@ -41,6 +41,8 @@ abstract class attr_constr{
 	}
 
 	abstract public function is_valid_value($new_value, $object_context);
+
+	abstract public function getSQLString();
 }
 
 class attr_constr_foreign extends attr_constr{
@@ -51,6 +53,13 @@ class attr_constr_foreign extends attr_constr{
 		return $class_name::exists($new_value, $this->parameters_array[2]);
 	}
 
+	public function getSQLString(){
+		$attribute_name = $this->attribute->name;
+		$table_name = $this->parameters_array[1];
+		$column_name = $this->paramters_array[2];
+		return "CONSTRAINT FOREIGN KEY $attribute_name REFERENCES $table_name ($column_name)";
+	}
+
 }
 
 class attr_constr_length extends attr_constr{
@@ -59,5 +68,9 @@ class attr_constr_length extends attr_constr{
 		if($this->attribute->type=="string"){
 			return strlen($new_value)<=$this->parameters_array[1];
 		}
+	}
+
+	public function getSQLString(){
+		return "";
 	}
 }

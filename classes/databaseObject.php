@@ -246,8 +246,8 @@ abstract class databaseObject{
 				}
 				$reflection = new ReflectionMethod($this, $method_name);
 				$class_name = static::getClassName();
-				if($reflection->isPublic()){
-					throw new Exception("DatabaseObjectException: method $method_name in class $class_name mustn't be public.");	
+				if(!$reflection->isProtected()){
+					throw new Exception("DatabaseObjectException: method $method_name in class $class_name must be protected.");	
 				}
 			}
 		}
@@ -323,18 +323,25 @@ abstract class databaseObject{
 		$current_columns = Database::getColumnsForTable($this->getTableName());
 		$attributes_without_columns = array();
 		foreach($this->attributes_storage AS $attribute){
-			$attribute_name = $attribute->name;
-			$exists = false;
-			foreach($current_columns AS $column){
-				if($column['Field']==$attribute_name){
-					$exists = true;
+			if($attribute->needsColumn()){
+				$attribute_name = $attribute->name;
+				$exists = false;
+				foreach($current_columns AS $column){
+					if($column['Field']==$attribute_name){
+						$exists = true;
+					}
 				}
-			}
-			if(!$exists){
-				$attributes_without_columns[] = $attribute;
+				if(!$exists){
+					$attributes_without_columns[] = $attribute;
+				}				
 			}
 		}
 		return $attributes_without_columns;
+	}
+
+	private static function createColumnForAttribute($attribute){
+		$query = $attribute->getSQLColumnStatement(static::getTableName());
+		Database::execute($query);
 	}
 
 	private function rebuildTableStructure(){
