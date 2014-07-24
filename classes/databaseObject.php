@@ -319,12 +319,29 @@ abstract class databaseObject{
 		return $ret;
 	}
 
-	private function getMissingColumns(){
-		
+	private function getAttributesWithoutColumns(){
+		$current_columns = Database::getColumnsForTable($this->getTableName());
+		$attributes_without_columns = array();
+		foreach($this->attributes_storage AS $attribute){
+			$attribute_name = $attribute->name;
+			$exists = false;
+			foreach($current_columns AS $column){
+				if($column['Field']==$attribute_name){
+					$exists = true;
+				}
+			}
+			if(!$exists){
+				$attributes_without_columns[] = $attribute;
+			}
+		}
+		return $attributes_without_columns;
 	}
 
 	private function rebuildTableStructure(){
-		$missing_columns = $this->getMissingColumns();
+		$attributes_without_columns = $this->getAttributesWithoutColumns();
+		foreach($attributes_without_columns AS $attribute){
+			self::createColumnForAttribute($attribute);
+		}
 	}
 
 	private function getRow($id){

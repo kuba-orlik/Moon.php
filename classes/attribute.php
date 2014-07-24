@@ -117,6 +117,10 @@ class Attribute{
 		return $raw;
 	}
 
+	public function needsColumn(){
+		return $this->mode[0]=='s' || $this->mode[1]=="+";
+	}
+
 	public function setValue($value){
 		$this->setRawValue($this->generateRawValue($value)); 
 	}

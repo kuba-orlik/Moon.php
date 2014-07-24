@@ -70,6 +70,11 @@ class Database{
 		return null;
 	}
 
+	public static getColumnsForTable($table_name){
+		$query = "SHOW COLUMNS FROM ?";
+		return Database::prepareAndExecute($query, array($table_name));
+	}
+
 	public static function execute($query){
 		$db = self::connectPDO();
 		$stm = $db->query($query);
