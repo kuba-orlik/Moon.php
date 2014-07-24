@@ -152,7 +152,6 @@ class databaseObjectColection{
 		$rows = $prp->fetchAll();
 		$ret = array();
 		foreach($rows AS $row){
-			//var_dump($row);
 			$ret[] = new $class_name($row);
 		}
 		return $ret;
@@ -305,13 +304,41 @@ abstract class databaseObject{
 		return databaseObject::$table_prefix . static::$machine_name;
 	}
 
+	private function generateQueryColumnsString(){
+		$attribute_names = array("id");
+		foreach($this->attributes_storage AS $attribute){
+			$attribute_names[] = $attribute->name;
+		}
+		$ret = "";
+		foreach($attribute_names AS $attribute_name){
+			$ret.=$attribute_name;
+			if($attribute_name!=end($attribute_names)){
+				$ret.=", ";
+			}
+		}
+		return $ret;
+	}
+
+	private function getMissingColumns(){
+		
+	}
+
+	private function rebuildTableStructure(){
+		$missing_columns = $this->getMissingColumns();
+	}
+
 	private function getRow($id){
 		$db = Database::connectPDO();
-		$query = "SELECT * FROM ". $this->getTableName() . " WHERE id=?";
-		$rows= Database::prepareAndExecute($query, array($id));
-		//$stmt = $db->prepare($query);
-		//$stmt->execute(array($id));
-		//$rows = $stmt->fetchAll();
+		$attribute_list = self::generateQueryColumnsString();
+		$query = "SELECT $attribute_list FROM ". $this->getTableName() . " WHERE id=?";
+		try{
+			$rows= Database::prepareAndExecute($query, array($id));			
+		}catch(Exception $e){
+			$error_no = $e->errorInfo[0];
+			if($error_no =="42S22"){
+				$this->rebuildTableStructure();
+			}
+		}
 		return $rows[0];
 	}
 

@@ -52,7 +52,8 @@ class Exercise extends databaseObject {
 		"bool recom s",
 		"array(int) results c+",
 		"string duration_stack c+",
-		"int max_score c+"
+		"int max_score c+",
+		"int number c+"
 	);
 
 	private function on_load(){
@@ -310,6 +311,10 @@ class Exercise extends databaseObject {
 			$total_exercise_time = $estimated_total_rep_time + $time_spent_on_breaks;
 			return floor($total_exercise_time);			
 		}
+	}
+
+	private function getNumber(){
+		return 3;
 	}
 
 }
