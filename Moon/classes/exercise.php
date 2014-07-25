@@ -1,6 +1,6 @@
 <?
 
-Moon::require_class("setTemplates");
+Moon::require_class("setTemplate");
 Moon::require_class("muscleParts");
 Moon::require_class("logEntries");
 

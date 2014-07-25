@@ -2,206 +2,6 @@
 include_once "database.php";
 include_once "attribute.php";
 
-class databaseObjectColection{
-	
-	//protected static $table_name;
-	//protected static $class_name;
-	protected static $filtered; //boolean
-	protected static $filter_column;
-	protected static $filter_value;
-	
-	public static function getAll($sort_attr=array()){
-		/*
-		 * $sort_attr = array(
-		 * 	sorted=>true,
-		 * 	sort_column=>'last_modified',
-		 * 	sort_order=>'ASC'
-		 * )
-		 * 
-		 */
-		if(self::$filtered){
-			return self::getFiltered(static::$filter_column, static::$filter_value);
-		}else{
-			return self::getUnfiltered($sort_attr);
-		}
-	}
-
-	public static function getTotalAmount($filterArray=null){
-		$condition = self::parse_condition($filterArray);
-		$query = "SELECT count(id) FROM words ". $condition["query_part"];
-		$rows = Database::prepareAndExecute($query, $condition["attributes"]);
-		return $rows[0][0];	
-	}
-
-	private static function parse_condition($params){
-		$params_count = count($params);
-		if($params_count%2!=0){
-			throw new Exception("first parameter to get() function should be an array with even amount of elements");
-		}
-		$condition = "";
-		$to_query = array();
-		for($i=0; $i<$params_count; $i+=2){
-			if(!in_array($params[$i], array("amount", "offset"))){
-				if(count($to_query)!=0){
-					$condition .= " AND ";
-				}else{
-					$condition.=' WHERE ';
-				}
-				$condition .= $params[$i] . "=?";
-				$to_query[]=$params[$i+1];				
-			}
-		}
-		return array(
-			"query_part"=>$condition,
-			"attributes"=>$to_query
-		);
-	}
-
-	private static function parse_sort($params){
-		$params_count = count($params);
-		if($params_count%2!=0){
-			throw new Exception("second parameter to get() function should be an array with even amount of elements");
-		}
-		$sort="";
-		for($i=0; $i<$params_count; $i+=2){
-			if($i==0){
-				$sort.=" ORDER BY ";
-			}else{
-				$sort .= ", ";
-			}
-			$sort.=$params[$i] . " " .  $params[$i+1];
-		}
-		return $sort;
-	}
-
-	private static function parse_query($params, $sort=array(), $verb="SELECT *"){
-		$condition = self::parse_condition($params);
-		$sort = self::parse_sort($sort);
-		//$table_name = self::getInsertTableName();
-		$query = $query = "$verb FROM " . static::$table_name . " " . $condition["query_part"] . " " . $sort;
-		return array(
-			"query"=>$query,
-			"attributes"=>$condition["attributes"]
-		);
-	}
-
-	public static function get($filterArray, $offset=0, $amount=50){
-		$offset = (int)$offset;
-		$amount = (int)$amount;
-
-		foreach($filterArray AS $index=>$value){
-			if($value=="offset"){
-				$offset = $filterArray[$index+1];
-				unset ($filterArray[$index]);
-				unset ($filterArray[$index+1]);
-				break;
-			}
-			
-		}
-
-		foreach($filterArray AS $index=>$value){
-			if($value=="amount"){
-				$amount = $filterArray[$index+1];
-				unset ($filterArray[$index]);
-				unset ($filterArray[$index+1]);
-				break;
-				//die($amount);
-			}
-		}
-
-		$filterArray = array_values($filterArray);
-
-		$query = self::parse_query($filterArray, array(), "SELECT *");
-		$query["query"].=" LIMIT $offset, $amount";
-		$rows = Database::prepareAndExecute($query["query"], $query["attributes"]);
-		$ret = array();
-		foreach($rows AS $row){
-			//$ret[]=new static::$class_name($row["id"]);
-			
-			$ret[]=new static::$class_name($row);
-
-			//$class_temp = static::$class_name;
-			//$ret[]=$class_temp::fromRow($row);
-		}
-		return $ret;
-	}
-	
-	protected static function getUnfiltered($sort_attr){		
-		$db = Database::connectPDO();
-		$query = "SELECT * FROM " . static::$table_name;
-		if(isset($sort_attr['sorted']) && $sort_attr['sorted']){
-			$query.=" ORDER BY " . $sort_attr->sort_column . " " . $sort_attr->sort_order;
-		}
-		$rows = $db->query($query );//->fetchAll();
-		$ret = array();
-		foreach($rows AS $row){
-			$ret[] = new static::$class_name($row);
-		}
-		return $ret;
-	}
-	
-	protected static function getFiltered($column, $value, $class_name=null){
-		if($class_name==null) $class_name=static::$class_name;
-		$db = Database::connectPDO();
-		$query = "SELECT * FROM " . static::$table_name . " WHERE $column = ?";
-		if(isset($sort_attr['sorted']) && $sort_attr['sorted']){
-			$query.=" ORDER BY " . $sort_attr->sort_column . " " . $sort_attr->sort_order;
-		}
-		$prp = $db->prepare($query);
-		$prp->execute(array($value));//->fetchAll();//->fetchAll();
-		$rows = $prp->fetchAll();
-		$ret = array();
-		foreach($rows AS $row){
-			$ret[] = new $class_name($row);
-		}
-		return $ret;
-	}
-	
-	public static function create(){
-		$query = "INSERT INTO " . static::$table_name . " VALUES ()";
-		$db = Database::connectPDO();
-		$rows = $db->query($query);
-		$id = $db->lastInsertId();
-		return new static::$class_name($id);
-	}
-
-	public static function delete($object_id){
-		$query = "DELETE FROM " . static::$table_name . " WHERE id=?";
-		$db = Database::connectPDO();
-		$prp = $db->prepare($query);
-		$prp->execute(array($object_id));
-		return array();
-	}	
-
-	public static function exists($id, $attribute_name="id"){
-		$query = "SELECT ? FROM " . static::$table_name . " WHERE id=?";
-		$db = Database::connectPDO();
-		$prp = $db->prepare($query);
-		$prp->execute(array($attribute_name, $id));
-		$rows = $prp->fetchAll();
-		return count($rows)!=0;
-	}
-
-	public static function put($attributes, $public=true){
-		$needs_creating = false;
-		$id = $attributes['id'];
-		if(!isset($id) || $id==null || $id==0){
-			$needs_creating=true;
-		}
-		if($needs_creating){
-			$object = static::create();
-		}else{
-			$object = new static::$class_name($id);
-		}
-		if($public){
-			$object->public_set($attributes);
-		}else{
-			$object->set($attributes); 
-		}
-		return $object;
-	}
-}
-
 abstract class databaseObject{
 	protected $id;
 
@@ -211,6 +11,10 @@ abstract class databaseObject{
 
 	private static $attributes;
 	public static $machine_name; 
+
+	protected static $filtered; //boolean
+	protected static $filter_column;
+	protected static $filter_value;
 
 	private function checkTableStructure(){
 	}
@@ -445,6 +249,189 @@ abstract class databaseObject{
 			$ret[$key] = $value->getValue();
 		}
 		return $ret;
+	}
+
+	public static function getAll($sort_attr=array()){
+		if(self::$filtered){
+			return self::getFiltered(static::$filter_column, static::$filter_value);
+		}else{
+			return self::getUnfiltered($sort_attr);
+		}
+	}
+
+	public static function getTotalAmount($filterArray=null){
+		$condition = self::parse_condition($filterArray);
+		$query = "SELECT count(id) FROM words ". $condition["query_part"];
+		$rows = Database::prepareAndExecute($query, $condition["attributes"]);
+		return $rows[0][0];	
+	}
+
+	private static function parse_condition($params){
+		$params_count = count($params);
+		if($params_count%2!=0){
+			throw new Exception("first parameter to get() function should be an array with even amount of elements");
+		}
+		$condition = "";
+		$to_query = array();
+		for($i=0; $i<$params_count; $i+=2){
+			if(!in_array($params[$i], array("amount", "offset"))){
+				if(count($to_query)!=0){
+					$condition .= " AND ";
+				}else{
+					$condition.=' WHERE ';
+				}
+				$condition .= $params[$i] . "=?";
+				$to_query[]=$params[$i+1];				
+			}
+		}
+		return array(
+			"query_part"=>$condition,
+			"attributes"=>$to_query
+		);
+	}
+
+	private static function parse_sort($params){
+		$params_count = count($params);
+		if($params_count%2!=0){
+			throw new Exception("second parameter to get() function should be an array with even amount of elements");
+		}
+		$sort="";
+		for($i=0; $i<$params_count; $i+=2){
+			if($i==0){
+				$sort.=" ORDER BY ";
+			}else{
+				$sort .= ", ";
+			}
+			$sort.=$params[$i] . " " .  $params[$i+1];
+		}
+		return $sort;
+	}
+
+	private static function parse_query($params, $sort=array(), $verb="SELECT *"){
+		$condition = self::parse_condition($params);
+		$sort = self::parse_sort($sort);
+		//$table_name = self::getInsertTableName();
+		$query = $query = "$verb FROM " . static::$table_name . " " . $condition["query_part"] . " " . $sort;
+		return array(
+			"query"=>$query,
+			"attributes"=>$condition["attributes"]
+		);
+	}
+
+	public static function get($filterArray, $offset=0, $amount=50){
+		$offset = (int)$offset;
+		$amount = (int)$amount;
+
+		foreach($filterArray AS $index=>$value){
+			if($value=="offset"){
+				$offset = $filterArray[$index+1];
+				unset ($filterArray[$index]);
+				unset ($filterArray[$index+1]);
+				break;
+			}
+			
+		}
+
+		foreach($filterArray AS $index=>$value){
+			if($value=="amount"){
+				$amount = $filterArray[$index+1];
+				unset ($filterArray[$index]);
+				unset ($filterArray[$index+1]);
+				break;
+				//die($amount);
+			}
+		}
+
+		$filterArray = array_values($filterArray);
+
+		$query = self::parse_query($filterArray, array(), "SELECT *");
+		$query["query"].=" LIMIT $offset, $amount";
+		$rows = Database::prepareAndExecute($query["query"], $query["attributes"]);
+		$ret = array();
+		foreach($rows AS $row){
+			//$ret[]=new static::$class_name($row["id"]);
+			
+			$ret[]=new static::$class_name($row);
+
+			//$class_temp = static::$class_name;
+			//$ret[]=$class_temp::fromRow($row);
+		}
+		return $ret;
+	}
+	
+	protected static function getUnfiltered($sort_attr){		
+		$db = Database::connectPDO();
+		$query = "SELECT * FROM " . static::$table_name;
+		if(isset($sort_attr['sorted']) && $sort_attr['sorted']){
+			$query.=" ORDER BY " . $sort_attr->sort_column . " " . $sort_attr->sort_order;
+		}
+		$rows = $db->query($query );//->fetchAll();
+		$ret = array();
+		foreach($rows AS $row){
+			$ret[] = new static::$class_name($row);
+		}
+		return $ret;
+	}
+	
+	protected static function getFiltered($column, $value, $class_name=null){
+		if($class_name==null) $class_name=static::$class_name;
+		$db = Database::connectPDO();
+		$query = "SELECT * FROM " . static::$table_name . " WHERE $column = ?";
+		if(isset($sort_attr['sorted']) && $sort_attr['sorted']){
+			$query.=" ORDER BY " . $sort_attr->sort_column . " " . $sort_attr->sort_order;
+		}
+		$prp = $db->prepare($query);
+		$prp->execute(array($value));//->fetchAll();//->fetchAll();
+		$rows = $prp->fetchAll();
+		$ret = array();
+		foreach($rows AS $row){
+			$ret[] = new $class_name($row);
+		}
+		return $ret;
+	}
+	
+	public static function create(){
+		$query = "INSERT INTO " . static::$table_name . " VALUES ()";
+		$db = Database::connectPDO();
+		$rows = $db->query($query);
+		$id = $db->lastInsertId();
+		return new static::$class_name($id);
+	}
+
+	public static function delete($object_id){
+		$query = "DELETE FROM " . static::$table_name . " WHERE id=?";
+		$db = Database::connectPDO();
+		$prp = $db->prepare($query);
+		$prp->execute(array($object_id));
+		return array();
+	}	
+
+	public static function exists($id, $attribute_name="id"){
+		$query = "SELECT ? FROM " . static::$table_name . " WHERE id=?";
+		$db = Database::connectPDO();
+		$prp = $db->prepare($query);
+		$prp->execute(array($attribute_name, $id));
+		$rows = $prp->fetchAll();
+		return count($rows)!=0;
+	}
+
+	public static function put($attributes, $public=true){
+		$needs_creating = false;
+		$id = $attributes['id'];
+		if(!isset($id) || $id==null || $id==0){
+			$needs_creating=true;
+		}
+		if($needs_creating){
+			$object = static::create();
+		}else{
+			$object = new static::$class_name($id);
+		}
+		if($public){
+			$object->public_set($attributes);
+		}else{
+			$object->set($attributes); 
+		}
+		return $object;
 	}
 
 	//abstract function cache_invalidation_on_change($attribute_name, $new_value);
