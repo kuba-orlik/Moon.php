@@ -3,7 +3,7 @@ include_once "database.php";
 include_once "attribute.php";
 
 abstract class databaseObject{
-	protected $id;
+	public $id;
 
 	private static $table_prefix = ""; //"class by design"
 	
@@ -30,7 +30,7 @@ abstract class databaseObject{
 
 	private function parse_attributes(){
 		foreach(static::$attributes AS $attribute_notation){
-			$new_attr = new Attribute($attribute_notation);
+			$new_attr = new Attribute($attribute_notation, $this);
 			$new_attr_name = $new_attr->name;
 			$this->attributes_storage[$new_attr_name] = $new_attr;
 		}
@@ -151,7 +151,13 @@ abstract class databaseObject{
 	private function rebuildTableStructure(){
 		$attributes_without_columns = $this->getAttributesWithoutColumns();
 		foreach($attributes_without_columns AS $attribute){
-			self::createColumnForAttribute($attribute);
+			try{
+				self::createColumnForAttribute($attribute);				
+			}catch(Exception $e){
+				if($e->errorInfo[1]==1060){
+					//do nothing. I have no idea why, but it always throws an SQL error "column already exists". I'm gonna cath it and do nothing with it
+				}
+			}
 		}
 	}
 
@@ -161,13 +167,14 @@ abstract class databaseObject{
 		$query = "SELECT $attribute_list FROM ". $this->getTableName() . " WHERE id=?";
 		try{
 			$rows= Database::prepareAndExecute($query, array($id));			
+			return $rows[0];
 		}catch(Exception $e){
 			$error_no = $e->errorInfo[0];
 			if($error_no =="42S22"){
 				$this->rebuildTableStructure();
 			}
+			return $this->getRow($id);
 		}
-		return $rows[0];
 	}
 
 	private function load($attrib){

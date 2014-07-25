@@ -57,7 +57,6 @@ class Database{
 		$prp = $db->prepare($query_template);
 		$prp->execute($attributes);
 		//$time_passed = self::getTimestamp()-$timestamp;
-		//var_dump(strpos('UPDATE', strtoupper($query_template)));
 		if(!$get_id){
 			if(strpos(strtoupper($query_template), 'UPDATE')===false && strpos(strtoupper($query_template), 'INSERT')===false){
 				$rows = $prp->fetchAll();			
@@ -76,7 +75,6 @@ class Database{
 
 	public static function execute($query){
 		$db = self::connectPDO();
-		echo $query. "; <br/>";
 		$stm = $db->query($query);
 		self::log($query);
 		$stm->execute();
@@ -85,12 +83,13 @@ class Database{
 	}
 
 	public static function generateUpdateQueryString($table_name, $id, $column_to_value_map){
-		$query = "UPDATE TABLE ? SET ";
-		$query_parameters = array($table_name);
-		$last_key = key( array_slice( $array, -1, 1, TRUE ));
+		$query = "UPDATE $table_name SET ";
+		//$query_parameters = array($table_name);
+		$query_parameters = array();
+		$last_key = key( array_slice( $column_to_value_map, -1, 1, TRUE ));
 		foreach($column_to_value_map AS $column=>$new_value){
-			$query .= "?=?";
-			$query_parameters[] = $column;
+			$query .= "$column=?";
+			//$query_parameters[] = $column;
 			$query_parameters[] = $new_value;
 			if($column!=$last_key){
 				$query.=", ";

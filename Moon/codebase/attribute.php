@@ -9,15 +9,34 @@ class Attribute{
 	public $name;
 	public $mode;
 	public $constraints = array();
+	private $is_valid_in_physical_cache = true;
+	private $parent_object;
 
 	private static $allowed_types = array("int", "string", "float", "bool", "array");
 
+	public function __construct($notation, $parent_object){
+		$this->parent_object = $parent_object;
+		$this->load_notation($notation);
+	}
+
 	private function getSQLType(){
+		if($this->is_cached()){
+			switch($this->type){
+				case "string":
+					return "text";
+				case "array":
+					return "text";
+				case "int":
+					return "varchar(30)";
+				default:
+					return "text";
+			}
+		}
 		switch($this->type){
 			case "string":
 				return "text";
 			case "array":
-				return "string";
+				return "text";
 			default:
 				return $this->type;
 		}
@@ -61,7 +80,8 @@ class Attribute{
 	}
 
 	public function is_cached(){
-		return strpos($this->mode, "c")===0;
+		//return strpos($this->mode, "c")===0;
+		return $this->mode == "c+";
 	}
 
 	private static function validate_type($type_name){
@@ -124,9 +144,6 @@ class Attribute{
 		}
 	}
 
-	public function __construct($notation){
-		$this->load_notation($notation);
-	}
 
 	public function setRawValue($raw_value){
 		$this->raw_value = $raw_value;
@@ -163,8 +180,22 @@ class Attribute{
 		return $this->mode[0]=='s' || $this->mode[1]=="+";
 	}
 
+	private function getClassMachineName(){
+		$class_name = get_class($this->parent_object);
+		return $class_name::$machine_name;
+	}
+
+	private function invalidate_physical_cache(){
+		$this->is_valid_in_physical_cache = false;
+		AttributeCacheControl::invalidate_value($this->getClassMachineName(), $this->parent_object->id, $this->name, $this->raw_value);
+	}
+
 	public function setValue($value){
-		$this->setRawValue($this->generateRawValue($value)); 
+		$new_raw_value = $this->generateRawValue($value);
+		if($new_raw_value!=$this->raw_value){
+			$this->setRawValue($new_raw_value); 
+			$this->invalidate_physical_cache();			
+		}
 	}
 
 	private function getRawValue(){
@@ -172,7 +203,6 @@ class Attribute{
 	}
 
 	private static function from_value_cache_notation($notation){
-		var_dump($notation);
 		preg_match('/__\$__[0-9]+__\$__\:\=(.*)/', $notation,  $matches);
 		return json_decode($matches[1]);
 	}

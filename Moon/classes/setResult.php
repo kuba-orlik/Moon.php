@@ -9,7 +9,6 @@ Moon::require_classes("setTemplate", "logEntry");
 }*/
 
 class SetResult extends databaseObject {
-	protected $id;
 	protected $set_type_id;
 	protected $log_entry_id;
 	protected $result;

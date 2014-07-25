@@ -21,20 +21,22 @@ class AttributeCacheControl{
 	}
 
 	public static function write_to_cache(){
-		$large_query = "";
+		$large_query_template = "";
 		$all_query_parameters = array();
 		foreach(self::$invalidated_attribute_values AS $class_machine_name=>$ids){
-			foreach(self::$ids AS $id=>$invalidation_entries){
+			foreach($ids AS $id=>$invalidation_entries){
 				$column_to_value_map = array();
 				foreach($invalidation_entries AS $entry){
 					$column_to_value_map[$entry->attribute_name]=$entry->new_value;
 				}
 				$temp_query_touple = Database::generateUpdateQueryString($class_machine_name, $id, $column_to_value_map);
-				$large_query .= $temp_query_touple->query;
-				$all_query_parameters = array_merge($all_query_parameters, $temp_query_touple->parameters);
+				$large_query_template .= $temp_query_touple["query"];
+				$all_query_parameters = array_merge($all_query_parameters, $temp_query_touple["parameters"]);
 			}
 		}
-
+		if($large_query_template){
+			Database::prepareAndExecute($large_query_template, $all_query_parameters);			
+		}
 	}
 }
 

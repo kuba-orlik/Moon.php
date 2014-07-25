@@ -9,7 +9,6 @@ Moon::require_classes("setTemplate", "setResult", "exercise");
 }*/
 
 abstract class LogEntry extends databaseObject {
-	protected $id;
 	protected $begin_time;
 	protected $duration_s;
 	protected $type;

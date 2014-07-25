@@ -4,7 +4,6 @@ Moon::require_classes("setTemplate", "exercise");
 
 
 class MusclePart extends databaseObject {
-	protected $id;
 	protected $name;
 	protected $user_id;
 

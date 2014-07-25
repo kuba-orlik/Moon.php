@@ -1,6 +1,5 @@
 <?
 class SetTemplate extends databaseObject {
-	protected $id;
 	protected $name;
 	protected $exercise_id;
 	protected $orderL;
