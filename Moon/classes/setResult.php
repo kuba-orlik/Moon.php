@@ -1,36 +1,12 @@
 <?
 
-Moon::require_classes("setTemplates", "logEntries");
+Moon::require_classes("setTemplate", "logEntry");
 
-class SetResults extends databaseObjectColection {
+/*class SetResults extends databaseObjectColection {
 	protected static $table_name = "sets";
 	protected static $class_name = "SetResult";
 	protected static $table_filtered = false;
-
-	public static function getForLogEntry($log_entry){
-		$id;
-		if($log_entry instanceof LogEntry){
-			$id = $log_entry->getAttr('id');
-		}else{
-			$id = $log_entry;
-		}
-		//$log_entry = LogEntries::getByID($id);
-		$rows = Database::prepareAndExecute('SELECT type, rel_id FROM log_entry WHERE id=?', array($id));
-		$type = $rows[0]['type'];
-		if($type=='regular'){
-			$rel_id = $rows[0]['rel_id'];
-			$rows = Database::prepareAndExecute('SELECT * FROM sets WHERE log_entry_id=? ORDER BY set_type_id ASC', array($rel_id));
-			//$rows=array();
-			$ret = array();
-			foreach($rows AS $row){
-				$ret[] = new SetResult($row);
-			}
-			return $ret;			
-		}
-
-		return array();
-	}
-}
+}*/
 
 class SetResult extends databaseObject {
 	protected $id;
@@ -66,4 +42,28 @@ class SetResult extends databaseObject {
 		return new SetTemplate($this->set_type_id);
 	}
 	
+
+	public static function getForLogEntry($log_entry){
+		$id;
+		if($log_entry instanceof LogEntry){
+			$id = $log_entry->getAttr('id');
+		}else{
+			$id = $log_entry;
+		}
+		//$log_entry = LogEntries::getByID($id);
+		$rows = Database::prepareAndExecute('SELECT type, rel_id FROM log_entry WHERE id=?', array($id));
+		$type = $rows[0]['type'];
+		if($type=='regular'){
+			$rel_id = $rows[0]['rel_id'];
+			$rows = Database::prepareAndExecute('SELECT * FROM sets WHERE log_entry_id=? ORDER BY set_type_id ASC', array($rel_id));
+			//$rows=array();
+			$ret = array();
+			foreach($rows AS $row){
+				$ret[] = new SetResult($row);
+			}
+			return $ret;			
+		}
+
+		return array();
+	}	
 }

@@ -1,8 +1,8 @@
 <?
 
 Moon::require_class("setTemplate");
-Moon::require_class("muscleParts");
-Moon::require_class("logEntries");
+Moon::require_class("musclePart");
+Moon::require_class("logEntry");
 
 class exercisesCollection extends databaseObjectColection {
 	protected static $table_name = "exercises";
