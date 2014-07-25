@@ -4,35 +4,13 @@ Moon::require_class("setTemplate");
 Moon::require_class("musclePart");
 Moon::require_class("logEntry");
 
-class exercisesCollection extends databaseObjectColection {
+/*class exercisesCollection extends databaseObjectColection {
 	protected static $table_name = "exercises";
 	protected static $class_name = "Exercise";
 	protected static $table_filtered = false;
 
-	public static function getByUserID($user_id){
-		$user_id = (int)$user_id;
-		$rows = Database::execute("select * from exercises WHERE user_id=$user_id");
-		$ret = array();
-		foreach($rows AS $row){
-			$ret[] = new Exercise($row);
-		}
-		return $ret;
-	}
-
-	public static function getByMusclePart($muscle_part){
-		if($muscle_part instanceof MusclePart){
-			$muscle_part_id = $muscle_part->getAttr('id');
-		}else{
-			$muscle_part_id = $muscle_part;
-		}
-		$rows = Database::prepareAndExecute("SELECT * FROM exercises WHERE muscle_part_id=?", array($muscle_part_id));
-		$ret = array();
-		foreach($rows AS $row){
-			$ret[] = new Exercise($row);
-		}
-		return $ret;
-	}
-}
+	
+}*/
 
 class Exercise extends databaseObject {
 
@@ -311,6 +289,30 @@ class Exercise extends databaseObject {
 
 	protected function getNumber(){
 		return 3;
+	}
+
+	public static function getByUserID($user_id){
+		$user_id = (int)$user_id;
+		$rows = Database::execute("select * from exercises WHERE user_id=$user_id");
+		$ret = array();
+		foreach($rows AS $row){
+			$ret[] = new Exercise($row);
+		}
+		return $ret;
+	}
+
+	public static function getByMusclePart($muscle_part){
+		if($muscle_part instanceof MusclePart){
+			$muscle_part_id = $muscle_part->getAttr('id');
+		}else{
+			$muscle_part_id = $muscle_part;
+		}
+		$rows = Database::prepareAndExecute("SELECT * FROM exercises WHERE muscle_part_id=?", array($muscle_part_id));
+		$ret = array();
+		foreach($rows AS $row){
+			$ret[] = new Exercise($row);
+		}
+		return $ret;
 	}
 
 }
