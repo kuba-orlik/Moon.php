@@ -1,6 +1,5 @@
 <?
 
-require_once (dirname(__FILE__) . "/../config.php");
 
 class Database{
 	
@@ -83,5 +82,24 @@ class Database{
 		$stm->execute();
 		$rows = $stm->fetchAll();
 		return $rows;
+	}
+
+	public static function generateUpdateQueryString($table_name, $id, $column_to_value_map){
+		$query = "UPDATE TABLE ? SET ";
+		$query_parameters = array($table_name);
+		$last_key = key( array_slice( $array, -1, 1, TRUE ));
+		foreach($column_to_value_map AS $column=>$new_value){
+			$query .= "?=?";
+			$query_parameters[] = $column;
+			$query_parameters[] = $new_value;
+			if($column!=$last_key){
+				$query.=", ";
+			}else{
+				$query.=" ";
+			}
+		}
+		$query.="WHERE id=?; ";
+		$query_parameters[]=$id;
+		return array("query"=>$query, "parameters"=>$query_parameters);
 	}
 }

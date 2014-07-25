@@ -6,7 +6,7 @@ class Moon{
 
 	public static function require_class($class_name){
 		$proper_class_name = lcfirst($class_name);
-		require_once dirname(__FILE__) . "/classes/" . $proper_class_name . ".php";
+		require_once dirname(__FILE__) . "/../classes/" . $proper_class_name . ".php";
 		if(!class_exists(ucfirst($class_name))){
 			throw new Exception("File $proper_class_name.php does not contain class named " . ucfirst($class_name));
 		}
