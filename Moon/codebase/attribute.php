@@ -46,6 +46,10 @@ class Attribute{
 		return count($this->constraints)>0;
 	}
 
+	public function getGetterFunctionName(){
+		return "get" . ucfirst($this->name);
+	}
+
 	private function getConstraintsSQLString(){
 		if(!$this->has_constraints()){
 			return "";

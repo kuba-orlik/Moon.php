@@ -85,6 +85,7 @@ abstract class databaseObject{
 	}
 
 	private static function getGetFunctionName($attribute_name){
+		return $this->attributes_storage[$attribute_name]->getGetterFunctionName();
 		return "get" . ucfirst($attribute_name);
 	}
 
@@ -111,7 +112,9 @@ abstract class databaseObject{
 	private function generateQueryColumnsString(){
 		$attribute_names = array("id");
 		foreach($this->attributes_storage AS $attribute){
-			$attribute_names[] = $attribute->name;
+			if($attribute->needsColumn()){
+				$attribute_names[] = $attribute->name;				
+			}
 		}
 		$ret = "";
 		foreach($attribute_names AS $attribute_name){
@@ -252,8 +255,13 @@ abstract class databaseObject{
 	public function getData(){
 		$ret = array();
 		$ret["id"] = $this->id;
-		foreach($this->attributes_storage AS $key=>$value){
-			$ret[$key] = $value->getValue();
+		foreach($this->attributes_storage AS $key=>$attribute){
+			if($attribute->needsColumn()){
+				$ret[$key] = $attribute->getValue();				
+			}else{
+				$function_name = $attribute->getGetterFunctionName();
+				$ret[$key] = $this->$function_name();
+			}
 		}
 		return $ret;
 	}
