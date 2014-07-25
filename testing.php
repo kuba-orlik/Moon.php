@@ -1,7 +1,6 @@
 <?
 
-include "config.php";
-include "classes/exercises.php";
+include "Moon.php";
 
 $exer = new Exercise(32);
 
