@@ -1,12 +1,6 @@
 <?
 
-include_once DIR_CLASSES . "databaseObject.php"; 
-
-include_once DIR_CLASSES . "setTemplates.php"; 
-
-include_once DIR_CLASSES . "users.php"; 
-
-include_once DIR_CLASSES . "exercises.php"; 
+Moon::require_classes("setTemplates", "exercise");
 
 class MuscleParts extends databaseObjectColection {
 	protected static $table_name = "muscle_parts";

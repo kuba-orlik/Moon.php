@@ -1,9 +1,5 @@
 <?
 
-include_once DIR_CLASSES . "databaseObject.php"; 
-
-include_once DIR_CLASSES . "exercises.php"; 
-
 class SetTemplates extends databaseObjectColection {
 	protected static $table_name = "set_templates";
 	protected static $class_name = "SetTemplate";

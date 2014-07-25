@@ -1,14 +1,6 @@
 <?
 
-include_once DIR_CLASSES . "databaseObject.php"; 
-
-include_once DIR_CLASSES . "setTemplates.php"; 
-
-include_once DIR_CLASSES . "setResults.php"; 
-
-include_once DIR_CLASSES . "users.php";
-
-include_once DIR_CLASSES . "exercises.php";
+Moon::require_classes("setTemplates", "setResults", "exercise");
 
 class LogEntries extends databaseObjectColection {
 	protected static $table_name = "log_entry";
