@@ -11,7 +11,7 @@ class AttributeCacheControl{
 		if(!isset(self::$invalidated_attribute_values[$class_machine_name][$entry_id])){
 			self::$invalidated_attribute_values[$class_machine_name][$entry_id] = array();
 		}
-		self::$invalidated_attribute_values[$class_machine_name][$entry_id][]=$entry;
+		self::$invalidated_attribute_values[$class_machine_name][$entry_id][$attribute_name]=$entry;
 	}
 
 	public static function invalidate_values($class_machine_name, $entry_id, $attribute_to_new_value_map){
@@ -20,7 +20,11 @@ class AttributeCacheControl{
 		}
 	}
 
-	public static function write_to_cache(){
+	public static function getCachedAttribute($class_machine_name, $entry_id, $attribute_name){
+		return self::$invalidated_attribute_values[$class_machine_name][$entry_id][$attribute_name]->new_value;
+	}
+
+	/*public static function write_to_cache(){
 		$large_query_template = "";
 		$all_query_parameters = array();
 		foreach(self::$invalidated_attribute_values AS $class_machine_name=>$ids){
@@ -30,14 +34,32 @@ class AttributeCacheControl{
 					$column_to_value_map[$entry->attribute_name]=$entry->new_value;
 				}
 				$temp_query_touple = Database::generateUpdateQueryString($class_machine_name, $id, $column_to_value_map);
-				$large_query_template .= $temp_query_touple["query"];
+				$large_query_template .= $temp_query_touple["query"] . "\r\n";
 				$all_query_parameters = array_merge($all_query_parameters, $temp_query_touple["parameters"]);
 			}
 		}
+		echo ($large_query_template);
 		if($large_query_template){
 			Database::prepareAndExecute($large_query_template, $all_query_parameters);			
 		}
-	}
+	}*/            //multiple queries are not allowed. I'll need to transfer eah of hem separately
+
+	public static function write_to_cache(){
+		$query_templates = array();
+		$query_parameter_arrays = array();
+		foreach(self::$invalidated_attribute_values AS $class_machine_name=>$ids){
+			foreach($ids AS $id=>$invalidation_entries){
+				$column_to_value_map = array();
+				foreach($invalidation_entries AS $entry){
+					$column_to_value_map[$entry->attribute_name]=$entry->new_value;
+				}
+				$temp_query_touple = Database::generateUpdateQueryString($class_machine_name, $id, $column_to_value_map);
+				$temp_query_template = $temp_query_touple["query"];
+				$temp_query_parameters = $temp_query_touple["parameters"];
+				Database::prepareAndExecute($temp_query_template, $temp_query_parameters);
+			}
+		}
+	}	
 }
 
 class AttributeInvalidationEntry{

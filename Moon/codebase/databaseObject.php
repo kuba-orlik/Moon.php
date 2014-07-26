@@ -74,17 +74,19 @@ abstract class databaseObject{
 			 	$this->$key = $data[$key];
 			}*/		
 			if($this->attribute_exists($key)){
-				$this->setRawAttribute($key, $value);
 				$temp_attr = $this->attributes_storage[$key];
-				if($temp_attr->is_cached() && $value==Null){
-					$function_name = self::getGetFunctionName($key);
-					$temp_attr->setValue($this->$function_name());
+				if($temp_attr->needsColumn()){
+					$this->setRawAttribute($key, $value);
+					if($temp_attr->is_cached() && $value==Null){
+						$function_name = $this->getGetFunctionName($key);
+						$temp_attr->setValue($this->$function_name());
+					}					
 				}
 			}
 		}
 	}
 
-	private static function getGetFunctionName($attribute_name){
+	private function getGetFunctionName($attribute_name){
 		return $this->attributes_storage[$attribute_name]->getGetterFunctionName();
 		return "get" . ucfirst($attribute_name);
 	}
@@ -94,7 +96,9 @@ abstract class databaseObject{
 			if($raw){
 				$this->attributes_storage[$attr_name]->setRawValue($attr_value);				
 			}else{
-				$this->attributes_storage[$attr_name]->setValue($attr_value);				
+				if($this->attributes_storage[$attr_name]->is_settable()){
+					$this->attributes_storage[$attr_name]->setValue($attr_value);									
+				}
 			}
 		}else{
 			throw new Exception("DatabaseObjectException: attribute $attr_name does not exists in class " . static::getClassName() . " for machine name " . static::$machine_name);
@@ -105,7 +109,7 @@ abstract class databaseObject{
 		$this->setRawAttribute($attr_name, $attr_value, false);
 	}
 
-	private function getTableName(){
+	private static function getTableName(){
 		return databaseObject::$table_prefix . static::$machine_name;
 	}
 
@@ -127,7 +131,7 @@ abstract class databaseObject{
 	}
 
 	private function getAttributesWithoutColumns(){
-		$current_columns = Database::getColumnsForTable($this->getTableName());
+		$current_columns = Database::getColumnsForTable(static::getTableName());
 		$attributes_without_columns = array();
 		foreach($this->attributes_storage AS $attribute){
 			if($attribute->needsColumn()){
@@ -167,7 +171,7 @@ abstract class databaseObject{
 	private function getRow($id){
 		$db = Database::connectPDO();
 		$attribute_list = self::generateQueryColumnsString();
-		$query = "SELECT $attribute_list FROM ". $this->getTableName() . " WHERE id=?";
+		$query = "SELECT $attribute_list FROM ". static::getTableName() . " WHERE id=?";
 		try{
 			$rows= Database::prepareAndExecute($query, array($id));			
 			return $rows[0];
@@ -211,12 +215,8 @@ abstract class databaseObject{
 		}
 	}
 	
-	public function setAttr($key, $value){
-		self::set(array($key=>$value));
-	}
-
 	public function set($array){
-		$table = $this->getTableName();
+		$table = self::getTableName();
 		/*foreach($array AS $key=>$value){
 				$this->$key = $array[$key];
 				$db = Database::connectPDO();
@@ -448,6 +448,17 @@ abstract class databaseObject{
 		}
 		return $object;
 	}
+
+	public static function getEntriesByColumnsValue($column_to_value_map){
+		$table_name = self::getTableName();
+		$rows = Database::getRowsWhereColumnsEqual($table_name, $column_to_value_map);
+		$ret = array();
+		$class_name = static::getClassName();
+		foreach($rows AS $row){
+			$ret[] = new $class_name($row);
+		}
+		return $ret;
+	} 
 
 	//abstract function cache_invalidation_on_change($attribute_name, $new_value);
 }

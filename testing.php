@@ -4,8 +4,9 @@ include "Moon.php";
 
 Moon::require_class("exercise");
 
-$exer = new Exercise(31);
+$exercises = Exercise::getByUserID(26);
 
-var_dump($exer->getData());
-
+foreach($exercises AS $exercise){
+	$exercise->getData();
+}
 AttributeCacheControl::write_to_cache();

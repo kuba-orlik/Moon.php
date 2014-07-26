@@ -15,8 +15,26 @@ class Database{
 	private static $connected = false;
 	
 	private static $pdo;
+
+	private static $prepared_queries_cache = array();
 		
-	
+	private static $optimize_prepares = true;
+
+	private static function prepare($query_template){
+		$db = self::connectPDO();
+		if(!self::$optimize_prepares){
+			return $db->prepare($query_template);
+		}else{
+			if(isset(self::$prepared_queries_cache[$query_template])){
+				$prp = self::$prepared_queries_cache[$query_template];
+			}else{
+				echo "preparing query  <br/>";
+				$prp = $db->prepare($query_template);
+				self::$prepared_queries_cache[$query_template] = $prp;
+			}
+			return $prp;			
+		}
+	}
 	
 	public static function connectPDO(){
 		if(self::$connected){
@@ -54,8 +72,9 @@ class Database{
 		$timestamp = self::getTimestamp();
 		$db = self::connectPDO();
 		self::log(self::replace_question_marks($query_template, $attributes));
-		$prp = $db->prepare($query_template);
+		$prp = self::prepare($query_template);
 		$prp->execute($attributes);
+		echo $query_template . "<br/>";
 		//$time_passed = self::getTimestamp()-$timestamp;
 		if(!$get_id){
 			if(strpos(strtoupper($query_template), 'UPDATE')===false && strpos(strtoupper($query_template), 'INSERT')===false){
@@ -74,6 +93,7 @@ class Database{
 	}
 
 	public static function execute($query){
+		echo "$query <br/>";
 		$db = self::connectPDO();
 		$stm = $db->query($query);
 		self::log($query);
@@ -100,5 +120,38 @@ class Database{
 		$query.="WHERE id=?; ";
 		$query_parameters[]=$id;
 		return array("query"=>$query, "parameters"=>$query_parameters);
+	}
+
+	public static function getRowsWhereColumnsEqual($table, $column_to_value_map){
+		$query_template = "SELECT * FROM $table WHERE ";
+		$query_parameters = array();
+		$last_key = key( array_slice( $column_to_value_map, -1, 1, TRUE ));
+		foreach($column_to_value_map AS $column_name=>$column_value){
+			$query_template.="$column_name=?";
+			$query_parameters[]=$column_value;
+			if($column_name == $last_key){
+				$query_template .= ";";
+			}else{
+				$query_template.=" AND ";
+			}
+		}
+		$rows = Database::prepareAndExecute($query_template, $query_parameters);
+		return $rows;
+	}
+
+	public static function getRowsByIDs($table_name, $ids){
+		$query_template = "SELECT * FROM $table_name WHERE id IN (";
+		$last_id = last($ids);
+		foreach($ids AS $id){
+			$query_template .= "$id";
+			if($id==$last_id){
+
+			}else{
+				$query_template .=", ";
+			}
+		}
+		$query_template.=")";
+		$rows = Database::execute($query_template);
+		return $rows;
 	}
 }

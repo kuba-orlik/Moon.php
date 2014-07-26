@@ -194,12 +194,20 @@ class Attribute{
 		AttributeCacheControl::invalidate_value($this->getClassMachineName(), $this->parent_object->id, $this->name, $this->raw_value);
 	}
 
+	public function is_settable(){
+		if($this->mode=="s"){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
 	public function setValue($value){
 		$new_raw_value = $this->generateRawValue($value);
 		if($new_raw_value!=$this->raw_value){
 			$this->setRawValue($new_raw_value); 
 			$this->invalidate_physical_cache();			
-		}
+		}			
 	}
 
 	private function getRawValue(){
@@ -211,11 +219,23 @@ class Attribute{
 		return json_decode($matches[1]);
 	}
 
+	private function getValueInNonPhysicalCache(){
+		$class_machine_name = $this->parent_object->machine_name;
+		$id = $this->parent_object->id;
+		$attribute_name = $this->name;
+		return AttributeCacheControl::getCachedAttribute($class_machine_name, $id, $attribute_name);
+	}
+
 	public function getValue(){
 		$val;
 		$raw = $this->raw_value;
 		if($this->is_cached()){
-			return self::from_value_cache_notation($raw);
+			if($this->is_valid_in_physical_cache){
+				return self::from_value_cache_notation($raw);				
+			}else{
+				$value_in_attribute_cache = $this->getValueInNonPhysicalCache();
+				return self::from_value_cache_notation($value_in_attribute_cache);
+			}
 		}
 		switch($this->type){
 			case "int":

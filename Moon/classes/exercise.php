@@ -293,12 +293,7 @@ class Exercise extends databaseObject {
 
 	public static function getByUserID($user_id){
 		$user_id = (int)$user_id;
-		$rows = Database::execute("select * from exercises WHERE user_id=$user_id");
-		$ret = array();
-		foreach($rows AS $row){
-			$ret[] = new Exercise($row);
-		}
-		return $ret;
+		return static::getEntriesByColumnsValue(array("user_id"=>$user_id));
 	}
 
 	public static function getByMusclePart($muscle_part){
@@ -314,5 +309,6 @@ class Exercise extends databaseObject {
 		}
 		return $ret;
 	}
+
 
 }
