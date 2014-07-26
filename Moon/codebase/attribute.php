@@ -220,9 +220,10 @@ class Attribute{
 	}
 
 	private function getValueInNonPhysicalCache(){
-		$class_machine_name = $this->parent_object->machine_name;
+		$class_machine_name = $this->parent_object->getMachineName();
 		$id = $this->parent_object->id;
 		$attribute_name = $this->name;
+		echo "$class_machine_name, $id, $attribute_name <br/>";
 		return AttributeCacheControl::getCachedAttribute($class_machine_name, $id, $attribute_name);
 	}
 

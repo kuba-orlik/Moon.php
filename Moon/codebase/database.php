@@ -20,6 +20,21 @@ class Database{
 		
 	private static $optimize_prepares = true;
 
+	public static function beginTransaction(){
+		$db = self::connectPDO();
+		$db->beginTransaction();
+	}
+
+	public static function commit(){
+		$db = self::connectPDO();
+		$db->commit();	
+	}
+
+	public static function rollBack(){
+		$db = self::connectPDO();
+		$db->rollBack();		
+	}
+
 	private static function prepare($query_template){
 		$db = self::connectPDO();
 		if(!self::$optimize_prepares){
@@ -43,6 +58,7 @@ class Database{
 			$db = new PDO('mysql:host=127.0.0.1;dbname=' . self::$database_name . ';charset=utf8', self::$username, self::$password, array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 			self::$connected = true;
 			self::$pdo = $db;
+			$db->query("SET storage_engine=INNODB")->execute();
 			return $db;			
 		}
 	}

@@ -19,6 +19,10 @@ abstract class databaseObject{
 	private function checkTableStructure(){
 	}
 
+	public function getMachineName(){
+		return static::$machine_name;
+	}
+
 	private function validate(){
 		if(!isset(static::$machine_name)){
 			throw new Exception("DatabaseObjectInvalidException: '\$machine_name' not set");

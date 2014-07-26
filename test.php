@@ -44,12 +44,12 @@ preg_match_all("/\/api\/exercises\/([^\/]+)\/([^\/]+)[\/]?/", "/api/exercises/13
 var_dump($matches);*/
 
 
-ob_implicit_flush();
 
-ob_start();
-print(" ");
-header("Content-Length: ".ob_get_length());
-header("Connection: close");
-ob_end_flush();
-//do other stuff
-sleep(10);
+echo('Text the user will see');
+$size = ob_get_length();
+header("Content-Length: $size");
+ob_end_flush(); // Strange behaviour, will not work
+flush(); // Unless both are called !
+// Do processing here 
+sleep(30);
+echo('Text user will never see');
