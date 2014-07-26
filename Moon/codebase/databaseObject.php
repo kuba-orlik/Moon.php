@@ -462,7 +462,7 @@ abstract class databaseObject{
 		return $ret;
 	}
 
-	public static function getEntriesByColumnsValue($column_to_value_map, $format){
+	public static function getEntriesByColumnsValue($column_to_value_map, $format="class"){
 		$table_name = self::getTableName();
 		$rows = Database::getRowsWhereColumnsEqual($table_name, $column_to_value_map);
 		$all_objects = array();

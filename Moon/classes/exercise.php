@@ -291,12 +291,12 @@ class Exercise extends databaseObject {
 		return 3;
 	}
 
-	public static function getByUserID($user_id){
+	public static function getByUserID($user_id, $format){
 		$user_id = (int)$user_id;
-		return static::getEntriesByColumnsValue(array("user_id"=>$user_id));
+		return static::getEntriesByColumnsValue(array("user_id"=>$user_id), $format);
 	}
 
-	public static function getByMusclePart($muscle_part){
+	public static function getByMusclePart($muscle_part, $format){
 		if($muscle_part instanceof MusclePart){
 			$muscle_part_id = $muscle_part->getAttr('id');
 		}else{

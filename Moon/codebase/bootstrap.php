@@ -23,7 +23,7 @@ class Moon{
 	public static function start_ob_cache(){
 		ob_end_clean();
 		header("Connection: close");
-		ignore_user_abort(true); // just to be safe
+		//ignore_user_abort(true); // just to be safe
 		ob_start();
 	}
 
