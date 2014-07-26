@@ -8,9 +8,9 @@ Moon::start_ob_cache();
 
 Moon::transaction_start();
 
-$exercise = new Exercise(32);
+$exercises = Exercise::getByUserID(26, "assoc");
 
-var_dump($exercise->getData());
+var_dump($exercises);
 
 Moon::end_ob_cache_and_terminate();
 

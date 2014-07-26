@@ -453,15 +453,24 @@ abstract class databaseObject{
 		return $object;
 	}
 
-	public static function getEntriesByColumnsValue($column_to_value_map){
-		$table_name = self::getTableName();
-		$rows = Database::getRowsWhereColumnsEqual($table_name, $column_to_value_map);
-		$ret = array();
-		$class_name = static::getClassName();
-		foreach($rows AS $row){
-			$ret[] = new $class_name($row);
+	private static function format_instances_array($array, $format="class"){
+		$format_class_name = "dbo_format_" . $format;
+		$ret = [];
+		foreach($array AS $instance){
+			$ret[] = $format_class_name::convert($instance);
 		}
 		return $ret;
+	}
+
+	public static function getEntriesByColumnsValue($column_to_value_map, $format){
+		$table_name = self::getTableName();
+		$rows = Database::getRowsWhereColumnsEqual($table_name, $column_to_value_map);
+		$all_objects = array();
+		$class_name = static::getClassName();
+		foreach($rows AS $row){
+			$all_objects[] = new $class_name($row);
+		}
+		return static::format_instances_array($all_objects, $format);
 	} 
 
 	//abstract function cache_invalidation_on_change($attribute_name, $new_value);
